@@ -1,7 +1,7 @@
 /*
     Controls:
-    = or F1  - Toggle ON/OFF
-    End      - Close Script
+    = or F1 - Toggle ON/OFF
+    End - Close Script
 */
 
 #SingleInstance Force
