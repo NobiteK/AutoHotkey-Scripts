@@ -52,6 +52,18 @@ Pixel-based triggerbot that automatically shoots when detecting color changes at
 
 ---
 
+## ✅ AutoAccept CS2
+
+Pixel-based auto-accept that automatically clicks the accept button when detecting the green "Your Match Is Ready!" screen in CS2. Supports 3 resolution presets.
+ 
+### Controls
+| Key | Action |
+|-----|--------|
+| `PgUp` | Toggle script ON/OFF |
+| `End` | Close script |
+
+---
+
 ## 💬 AutoMessage
 
 Automatically sends a customizable message at customizable intervals with always-on-top GUI with customizable hotkey, and optional Enter key press after each message option.
