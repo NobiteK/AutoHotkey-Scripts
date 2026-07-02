@@ -23,6 +23,7 @@ holdEnabled := false
 currentHoldHotkey := ""
 keyboardKey := ""
 settingKeyboardKey := false
+capturedMouseButton := ""
 
 ; --- Tray ---
 Menu, Tray, NoStandard
@@ -57,8 +58,9 @@ yPos += gap + 24
 ; Button + HOLD
 Gui, Add, Text, cWhite x%margin% y%yPos%, Button:
 Gui, Add, Text, vHoldLabel cGreen x90 y%yPos% Hidden, [HOLD: ON]
+Gui, Add, Text, vChooseIndicator c00AAFF x90 y%yPos% Hidden, [CHOOSE CUSTOM BUTTON]
 yPos += 24
-Gui, Add, DropDownList, vMouseButtonChoice w147 cWhite Background0x2D2D30 x%margin% y%yPos% gUpdateButton, Left Mouse|Right Mouse|Middle Mouse|Keyboard - "?"
+Gui, Add, DropDownList, vMouseButtonChoice w147 cWhite Background0x2D2D30 x%margin% y%yPos% gUpdateButton, Left Mouse|Right Mouse|Middle Mouse|Custom Button
 GuiControl, ChooseString, MouseButtonChoice, %mouseButton%
 Gui, Add, Button, vHoldBtn x193 y%yPos% w48 h24 gClickHold, HOLD
 
@@ -66,6 +68,7 @@ yPos += gap + 24
 
 ; Toggle key
 Gui, Add, Text, cWhite x%margin% y%yPos%, Toggle key:
+Gui, Add, Text, vToggleIndicator c00AAFF x115 y%yPos% Hidden, [CHOOSE TOGGLE KEY]
 yPos += 24
 Gui, Add, Button, vHotkeyBtn gSetHotkey w201 +0x4000 x%margin% y%yPos%, %hotkeyToggle%
 Gui, Add, Progress, vIndicatorBar x8 y8 w12 h12 Background23272E -Border
@@ -122,7 +125,7 @@ UpdateButton:
     } else if (selectedButton = "Left Mouse") {
         cachedButton := "Left"
         keyboardKey := ""
-    } else if (InStr(selectedButton, "Keyboard")) {
+    } else {
         Gosub, SetKeyboardButton
     }
 
@@ -141,95 +144,34 @@ UpdateButton:
 return
 
 SetKeyboardButton:
-    Gui, +OwnDialogs
-    MsgBox, 64, Set Button, Click OK and press a key to set button.
+    wasHoldLabelShown := holdEnabled
+    if (holdEnabled)
+        GuiControl, Hide, HoldLabel
+    GuiControl, Show, ChooseIndicator
 
     settingKeyboardKey := true
 
-    Input, newKey, L1 T5, {LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Space}{Enter}{Tab}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}
-
-    capturedKey := ""
-    sendKey := ""
-
-    if (ErrorLevel = "EndKey:LControl" || ErrorLevel = "EndKey:RControl") {
-        capturedKey := "Ctrl",  sendKey := "Ctrl"
-    } else if (ErrorLevel = "EndKey:LShift" || ErrorLevel = "EndKey:RShift") {
-        capturedKey := "Shift", sendKey := "Shift"
-    } else if (ErrorLevel = "EndKey:LAlt" || ErrorLevel = "EndKey:RAlt") {
-        capturedKey := "Alt",   sendKey := "Alt"
-    } else if (ErrorLevel = "EndKey:LWin" || ErrorLevel = "EndKey:RWin") {
-        capturedKey := "Win",   sendKey := "LWin"
-    } else if (ErrorLevel = "EndKey:Space") {
-        capturedKey := "Space", sendKey := "Space"
-    } else if (ErrorLevel = "EndKey:Enter") {
-        capturedKey := "Enter", sendKey := "Enter"
-    } else if (ErrorLevel = "EndKey:Tab") {
-        capturedKey := "Tab",   sendKey := "Tab"
-    } else if (ErrorLevel = "EndKey:Backspace") {
-        capturedKey := "Backspace", sendKey := "Backspace"
-    } else if (ErrorLevel = "EndKey:Delete") {
-        capturedKey := "Delete", sendKey := "Delete"
-    } else if (ErrorLevel = "EndKey:Insert") {
-        capturedKey := "Insert", sendKey := "Insert"
-    } else if (ErrorLevel = "EndKey:Home") {
-        capturedKey := "Home",  sendKey := "Home"
-    } else if (ErrorLevel = "EndKey:End") {
-        capturedKey := "End",   sendKey := "End"
-    } else if (ErrorLevel = "EndKey:PgUp") {
-        capturedKey := "PgUp",  sendKey := "PgUp"
-    } else if (ErrorLevel = "EndKey:PgDn") {
-        capturedKey := "PgDn",  sendKey := "PgDn"
-    } else if (ErrorLevel = "EndKey:Up") {
-        capturedKey := "Up",    sendKey := "Up"
-    } else if (ErrorLevel = "EndKey:Down") {
-        capturedKey := "Down",  sendKey := "Down"
-    } else if (ErrorLevel = "EndKey:Left") {
-        capturedKey := "Left",  sendKey := "Left"
-    } else if (ErrorLevel = "EndKey:Right") {
-        capturedKey := "Right", sendKey := "Right"
-    } else if (ErrorLevel = "EndKey:F1") {
-        capturedKey := "F1",  sendKey := "F1"
-    } else if (ErrorLevel = "EndKey:F2") {
-        capturedKey := "F2",  sendKey := "F2"
-    } else if (ErrorLevel = "EndKey:F3") {
-        capturedKey := "F3",  sendKey := "F3"
-    } else if (ErrorLevel = "EndKey:F4") {
-        capturedKey := "F4",  sendKey := "F4"
-    } else if (ErrorLevel = "EndKey:F5") {
-        capturedKey := "F5",  sendKey := "F5"
-    } else if (ErrorLevel = "EndKey:F6") {
-        capturedKey := "F6",  sendKey := "F6"
-    } else if (ErrorLevel = "EndKey:F7") {
-        capturedKey := "F7",  sendKey := "F7"
-    } else if (ErrorLevel = "EndKey:F8") {
-        capturedKey := "F8",  sendKey := "F8"
-    } else if (ErrorLevel = "EndKey:F9") {
-        capturedKey := "F9",  sendKey := "F9"
-    } else if (ErrorLevel = "EndKey:F10") {
-        capturedKey := "F10", sendKey := "F10"
-    } else if (ErrorLevel = "EndKey:F11") {
-        capturedKey := "F11", sendKey := "F11"
-    } else if (ErrorLevel = "EndKey:F12") {
-        capturedKey := "F12", sendKey := "F12"
-    } else if (newKey != "") {
-        capturedKey := newKey
-        sendKey := newKey
-    }
+    result := CaptureKeyOrMouse()
+    capturedKey := result.key
+    sendKey := result.send
 
     if (capturedKey != "") {
         keyboardKey := sendKey
         cachedButton := "Keyboard"
-        newLabel := "Keyboard - """ . capturedKey . """"
+        newLabel := capturedKey
         GuiControl,, MouseButtonChoice, |Left Mouse|Right Mouse|Middle Mouse|%newLabel%
         GuiControl, ChooseString, MouseButtonChoice, %newLabel%
     } else {
         cachedButton := "Left"
         keyboardKey := ""
-        GuiControl,, MouseButtonChoice, |Left Mouse|Right Mouse|Middle Mouse|Keyboard - "?"
+        GuiControl,, MouseButtonChoice, |Left Mouse|Right Mouse|Middle Mouse|Custom Button
         GuiControl, ChooseString, MouseButtonChoice, Left Mouse
     }
 
     settingKeyboardKey := false
+    GuiControl, Hide, ChooseIndicator
+    if (wasHoldLabelShown)
+        GuiControl, Show, HoldLabel
 return
 
 GuiClose:
@@ -327,15 +269,18 @@ ClickHold:
 return
 
 SetHotkey:
-    Gui, +OwnDialogs
-    MsgBox, 64, Set Hotkey, Click OK and press a key to set hotkey.
-    Input, newHotkey, L1 M
-    if (ErrorLevel = "Max") {
+    GuiControl, Show, ToggleIndicator
+
+    result := CaptureKeyOrMouse()
+
+    if (result.key != "") {
         Hotkey, %hotkeyToggle%, ToggleScript, Off
-        hotkeyToggle := newHotkey
+        hotkeyToggle := result.send
         Hotkey, %hotkeyToggle%, ToggleScript, On
-        GuiControl,, HotkeyBtn, %hotkeyToggle%
+        GuiControl,, HotkeyBtn, % result.key
     }
+
+    GuiControl, Hide, ToggleIndicator
 return
 
 ToggleScript:
@@ -476,4 +421,98 @@ return
 ExitScript:
     DllCall("timeEndPeriod", UInt, 1)
     ExitApp
+return
+
+CaptureKeyOrMouse() {
+    global capturedMouseButton
+    capturedMouseButton := ""
+
+    try Hotkey, XButton1, CaptureMouseButton, On
+    try Hotkey, XButton2, CaptureMouseButton, On
+
+    Input, newKey, L1 T5, {LControl}{RControl}{LShift}{RShift}{LAlt}{RAlt}{LWin}{RWin}{Space}{Enter}{Tab}{Backspace}{Delete}{Insert}{Home}{End}{PgUp}{PgDn}{Up}{Down}{Left}{Right}{F1}{F2}{F3}{F4}{F5}{F6}{F7}{F8}{F9}{F10}{F11}{F12}{Escape}
+    localErrorLevel := ErrorLevel
+
+    try Hotkey, XButton1, CaptureMouseButton, Off
+    try Hotkey, XButton2, CaptureMouseButton, Off
+
+    if (capturedMouseButton != "")
+        return {key: capturedMouseButton, send: capturedMouseButton}
+
+    capturedKey := ""
+    sendKey := ""
+
+    if (localErrorLevel = "EndKey:LControl" || localErrorLevel = "EndKey:RControl") {
+        capturedKey := "Ctrl",  sendKey := "Ctrl"
+    } else if (localErrorLevel = "EndKey:LShift" || localErrorLevel = "EndKey:RShift") {
+        capturedKey := "Shift", sendKey := "Shift"
+    } else if (localErrorLevel = "EndKey:LAlt" || localErrorLevel = "EndKey:RAlt") {
+        capturedKey := "Alt",   sendKey := "Alt"
+    } else if (localErrorLevel = "EndKey:LWin" || localErrorLevel = "EndKey:RWin") {
+        capturedKey := "Win",   sendKey := "LWin"
+    } else if (localErrorLevel = "EndKey:Space") {
+        capturedKey := "Space", sendKey := "Space"
+    } else if (localErrorLevel = "EndKey:Enter") {
+        capturedKey := "Enter", sendKey := "Enter"
+    } else if (localErrorLevel = "EndKey:Tab") {
+        capturedKey := "Tab",   sendKey := "Tab"
+    } else if (localErrorLevel = "EndKey:Backspace") {
+        capturedKey := "Backspace", sendKey := "Backspace"
+    } else if (localErrorLevel = "EndKey:Delete") {
+        capturedKey := "Delete", sendKey := "Delete"
+    } else if (localErrorLevel = "EndKey:Insert") {
+        capturedKey := "Insert", sendKey := "Insert"
+    } else if (localErrorLevel = "EndKey:Home") {
+        capturedKey := "Home",  sendKey := "Home"
+    } else if (localErrorLevel = "EndKey:End") {
+        capturedKey := "End",   sendKey := "End"
+    } else if (localErrorLevel = "EndKey:PgUp") {
+        capturedKey := "PgUp",  sendKey := "PgUp"
+    } else if (localErrorLevel = "EndKey:PgDn") {
+        capturedKey := "PgDn",  sendKey := "PgDn"
+    } else if (localErrorLevel = "EndKey:Up") {
+        capturedKey := "Up",    sendKey := "Up"
+    } else if (localErrorLevel = "EndKey:Down") {
+        capturedKey := "Down",  sendKey := "Down"
+    } else if (localErrorLevel = "EndKey:Left") {
+        capturedKey := "Left",  sendKey := "Left"
+    } else if (localErrorLevel = "EndKey:Right") {
+        capturedKey := "Right", sendKey := "Right"
+    } else if (localErrorLevel = "EndKey:Escape") {
+        capturedKey := "Esc",   sendKey := "Escape"
+    } else if (localErrorLevel = "EndKey:F1") {
+        capturedKey := "F1",  sendKey := "F1"
+    } else if (localErrorLevel = "EndKey:F2") {
+        capturedKey := "F2",  sendKey := "F2"
+    } else if (localErrorLevel = "EndKey:F3") {
+        capturedKey := "F3",  sendKey := "F3"
+    } else if (localErrorLevel = "EndKey:F4") {
+        capturedKey := "F4",  sendKey := "F4"
+    } else if (localErrorLevel = "EndKey:F5") {
+        capturedKey := "F5",  sendKey := "F5"
+    } else if (localErrorLevel = "EndKey:F6") {
+        capturedKey := "F6",  sendKey := "F6"
+    } else if (localErrorLevel = "EndKey:F7") {
+        capturedKey := "F7",  sendKey := "F7"
+    } else if (localErrorLevel = "EndKey:F8") {
+        capturedKey := "F8",  sendKey := "F8"
+    } else if (localErrorLevel = "EndKey:F9") {
+        capturedKey := "F9",  sendKey := "F9"
+    } else if (localErrorLevel = "EndKey:F10") {
+        capturedKey := "F10", sendKey := "F10"
+    } else if (localErrorLevel = "EndKey:F11") {
+        capturedKey := "F11", sendKey := "F11"
+    } else if (localErrorLevel = "EndKey:F12") {
+        capturedKey := "F12", sendKey := "F12"
+    } else if (newKey != "") {
+        capturedKey := newKey
+        sendKey := newKey
+    }
+
+    return {key: capturedKey, send: sendKey}
+}
+
+CaptureMouseButton:
+    capturedMouseButton := A_ThisHotkey
+    Send {Escape}
 return
