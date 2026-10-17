@@ -17,13 +17,13 @@ CoordMode, Pixel, Screen
 CoordMode, Mouse, Screen
 
 ; ===== SETTINGS =====
-Threshold       := 15     ; roznica koloru na kanal, mniej = czulej
-CheckMin        := 80     ; min przerwa miedzy sprawdzeniami (ms)
-CheckMax        := 200    ; max przerwa miedzy sprawdzeniami (ms)
-Cooldown        := 600    ; min odstep miedzy strzalami (ms)
-OffsetX         := 2      ; przesuniecie punktu probkowania
-OffsetY         := 2      ; przesuniecie punktu probkowania
-UseScreenCenter := false  ; true = srodek ekranu zamiast pozycji kursora
+Threshold       := 15     ; color difference per channel, lower = more sensitive
+CheckMin        := 80     ; min interval between checks (ms)
+CheckMax        := 200    ; max interval between checks (ms)
+Cooldown        := 600    ; min interval between shots (ms)
+OffsetX         := 2      ; sampling point offset
+OffsetY         := 2      ; sampling point offset
+UseScreenCenter := false  ; true = screen center instead of cursor position
 ; ======================
 
 Menu, Tray, NoStandard
